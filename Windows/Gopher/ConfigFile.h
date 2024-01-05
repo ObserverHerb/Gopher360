@@ -5,12 +5,13 @@
 #include <sstream>
 #include <map>
 #include <fstream>
+#include <vector>
 #include "Convert.h"
 
 class ConfigFile
 {
 private:
-  std::map<std::string, std::string> contents;
+  std::map<std::string, std::vector<std::string>> contents;
   std::string fName;
 
   void removeComment(std::string &line) const;
@@ -19,7 +20,7 @@ private:
   bool validLine(const std::string &line) const;
 
   void extractKey(std::string &key, size_t const &sepPos, const std::string &line) const;
-  void extractValue(std::string &value, size_t const &sepPos, const std::string &line) const;
+  void extractValues(std::vector<std::string> &values, size_t const &sepPos, const std::string &line) const;
 
   void extractContents(const std::string &line);
 
@@ -30,15 +31,13 @@ private:
 public:
   ConfigFile(const std::string &fName);
 
-  bool keyExists(const std::string &key) const;
-
-  template <typename ValueType>
-  ValueType getValueOfKey(const std::string &key, ValueType const &defaultValue = ValueType()) const
+  std::vector<std::string> getValuesOfKey(const std::string &key, const std::vector<std::string> &defaultValue = {"0"}) const
   {
-    if (!keyExists(key))
+    std::map<std::string, std::vector<std::string>>::const_iterator it = contents.find(key);
+    if (it == contents.end())
       return defaultValue;
 
-    return Convert::string_to_T<ValueType>(contents.find(key)->second);
+    return it->second;
   };
 
   void exitWithError(const std::string &error);

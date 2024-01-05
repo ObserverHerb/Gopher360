@@ -50,34 +50,34 @@ private:
   unsigned int speed_idx = 0;
 
   // Mouse Clicks
-  DWORD CONFIG_MOUSE_LEFT = NULL;
-  DWORD CONFIG_MOUSE_RIGHT = NULL;
-  DWORD CONFIG_MOUSE_MIDDLE = NULL;
+  WORD CONFIG_MOUSE_LEFT = NULL;
+  WORD CONFIG_MOUSE_RIGHT = NULL;
+  WORD CONFIG_MOUSE_MIDDLE = NULL;
   
   // Gopher Settings
-  DWORD CONFIG_HIDE = NULL;
-  DWORD CONFIG_DISABLE = NULL;
-  DWORD CONFIG_DISABLE_VIBRATION = NULL;
-  DWORD CONFIG_SPEED_CHANGE = NULL;
-  DWORD CONFIG_OSK = NULL;
+  WORD CONFIG_HIDE = NULL;
+  WORD CONFIG_DISABLE = NULL;
+  WORD CONFIG_DISABLE_VIBRATION = NULL;
+  WORD CONFIG_SPEED_CHANGE = NULL;
+  WORD CONFIG_OSK = NULL;
 
   // Gamepad bindings
-  DWORD GAMEPAD_DPAD_UP = NULL;
-  DWORD GAMEPAD_DPAD_DOWN = NULL;
-  DWORD GAMEPAD_DPAD_LEFT = NULL;
-  DWORD GAMEPAD_DPAD_RIGHT = NULL;
-  DWORD GAMEPAD_START = NULL;
-  DWORD GAMEPAD_BACK = NULL;
-  DWORD GAMEPAD_LEFT_THUMB = NULL;
-  DWORD GAMEPAD_RIGHT_THUMB = NULL;
-  DWORD GAMEPAD_LEFT_SHOULDER = NULL;
-  DWORD GAMEPAD_RIGHT_SHOULDER = NULL;
-  DWORD GAMEPAD_A = NULL;
-  DWORD GAMEPAD_B = NULL;
-  DWORD GAMEPAD_X = NULL;
-  DWORD GAMEPAD_Y = NULL;
-  DWORD GAMEPAD_TRIGGER_LEFT = NULL;
-  DWORD GAMEPAD_TRIGGER_RIGHT = NULL;
+  std::vector<WORD> GAMEPAD_DPAD_UP = {};
+  std::vector<WORD> GAMEPAD_DPAD_DOWN = {};
+  std::vector<WORD> GAMEPAD_DPAD_LEFT = {};
+  std::vector<WORD> GAMEPAD_DPAD_RIGHT = {};
+  std::vector<WORD> GAMEPAD_START = {};
+  std::vector<WORD> GAMEPAD_BACK = {};
+  std::vector<WORD> GAMEPAD_LEFT_THUMB = {};
+  std::vector<WORD> GAMEPAD_RIGHT_THUMB = {};
+  std::vector<WORD> GAMEPAD_LEFT_SHOULDER = {};
+  std::vector<WORD> GAMEPAD_RIGHT_SHOULDER = {};
+  std::vector<WORD> GAMEPAD_A = {};
+  std::vector<WORD> GAMEPAD_B = {};
+  std::vector<WORD> GAMEPAD_X = {};
+  std::vector<WORD> GAMEPAD_Y = {};
+  std::vector<WORD> GAMEPAD_TRIGGER_LEFT = {};
+  std::vector<WORD> GAMEPAD_TRIGGER_RIGHT = {};
 
   // Button press state logic variables
   std::map<DWORD, bool> _xboxClickStateLastIteration;
@@ -116,11 +116,11 @@ public:
 
   void handleScrolling();
 
-  void handleTriggers(WORD lKey, WORD rKey);
+  void handleTriggers(std::vector<WORD> lKey, std::vector<WORD> rKey);
 
   bool xboxClickStateExists(DWORD xinput);
 
-  void mapKeyboard(DWORD STATE, WORD key);
+  void mapKeyboard(DWORD STATE, std::vector<WORD> keys);
 
   void mapMouseClick(DWORD STATE, DWORD keyDown, DWORD keyUp);
 

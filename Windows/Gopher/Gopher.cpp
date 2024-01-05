@@ -8,36 +8,41 @@
 // Params:
 //   cmd    The value of the key to send(see http://msdn.microsoft.com/en-us/library/windows/desktop/dd375731%28v=vs.85%29.aspx)
 //   flag   The KEYEVENT for the key
-void inputKeyboard(WORD cmd, DWORD flag)
+void inputKeyboard(std::vector<WORD> cmds, DWORD flag)
 {
-  INPUT input;
-  input.type = INPUT_KEYBOARD;
-  input.ki.wScan = 0;
-  input.ki.time = 0;
-  input.ki.dwExtraInfo = 0;
-  input.ki.wVk = cmd;
-  input.ki.dwFlags = flag;
-  SendInput(1, &input, sizeof(INPUT));
+  std::vector<INPUT> inputs;
+  for (const WORD cmd : cmds)
+  {
+    INPUT input;
+    input.type = INPUT_KEYBOARD;
+    input.ki.wScan = 0;
+    input.ki.time = 0;
+    input.ki.dwExtraInfo = 0;
+    input.ki.wVk = cmd;
+    input.ki.dwFlags = flag;
+    inputs.push_back(input);
+  }
+  SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
 }
 
 // Description:
 //   Send a keyboard input based on the key value with the "pressed down" event.
 //
 // Params:
-//   cmd    The value of the key to send
-void inputKeyboardDown(WORD cmd)
+//   cmd    The value of the keys to send
+void inputKeyboardDown(std::vector<WORD> cmds)
 {
-  inputKeyboard(cmd, 0);
+  inputKeyboard(cmds, 0);
 }
 
 // Description:
 //   Send a keyboard input based on the key value with the "released" event
 //
 // Params:
-//   cmd    The value of the key to send
-void inputKeyboardUp(WORD cmd)
+//   cmds    The value of the keys to send
+void inputKeyboardUp(std::vector<WORD> cmds)
 {
-  inputKeyboard(cmd, KEYEVENTF_KEYUP);
+  inputKeyboard(cmds, KEYEVENTF_KEYUP);
 }
 
 // Description:
@@ -70,6 +75,13 @@ void mouseEvent(DWORD dwFlags, DWORD mouseData = 0)
   SendInput(1, &input, sizeof(INPUT));
 }
 
+std::vector<WORD> stringsToShorts(const std::vector<std::string> &strings)
+{
+  std::vector<WORD> shorts;
+  for (const std::string &string : strings) shorts.push_back(std::stoi(string.c_str(), 0, 0));
+  return shorts;
+}
+
 Gopher::Gopher(CXBOXController * controller)
   : _controller(controller)
 {
@@ -85,63 +97,63 @@ void Gopher::loadConfigFile()
   //--------------------------------
   // Configuration bindings
   //--------------------------------
-  CONFIG_MOUSE_LEFT = strtol(cfg.getValueOfKey<std::string>("CONFIG_MOUSE_LEFT").c_str(), 0, 0);
-  CONFIG_MOUSE_RIGHT = strtol(cfg.getValueOfKey<std::string>("CONFIG_MOUSE_RIGHT").c_str(), 0, 0);
-  CONFIG_MOUSE_MIDDLE = strtol(cfg.getValueOfKey<std::string>("CONFIG_MOUSE_MIDDLE").c_str(), 0, 0);
-  CONFIG_HIDE = strtol(cfg.getValueOfKey<std::string>("CONFIG_HIDE").c_str(), 0, 0);
-  CONFIG_DISABLE = strtol(cfg.getValueOfKey<std::string>("CONFIG_DISABLE").c_str(), 0, 0);
-  CONFIG_DISABLE_VIBRATION = strtol(cfg.getValueOfKey<std::string>("CONFIG_DISABLE_VIBRATION").c_str(), 0, 0);
-  CONFIG_SPEED_CHANGE = strtol(cfg.getValueOfKey<std::string>("CONFIG_SPEED_CHANGE").c_str(), 0, 0);
-  CONFIG_OSK = strtol(cfg.getValueOfKey<std::string>("CONFIG_OSK").c_str(), 0, 0);
+  CONFIG_MOUSE_LEFT = stringsToShorts(cfg.getValuesOfKey("CONFIG_MOUSE_LEFT")).front();
+  CONFIG_MOUSE_RIGHT = stringsToShorts(cfg.getValuesOfKey("CONFIG_MOUSE_RIGHT")).front();
+  CONFIG_MOUSE_MIDDLE = stringsToShorts(cfg.getValuesOfKey("CONFIG_MOUSE_MIDDLE")).front();
+  CONFIG_HIDE = stringsToShorts(cfg.getValuesOfKey("CONFIG_HIDE")).front();
+  CONFIG_DISABLE = stringsToShorts(cfg.getValuesOfKey("CONFIG_DISABLE")).front();
+  CONFIG_DISABLE_VIBRATION = stringsToShorts(cfg.getValuesOfKey("CONFIG_DISABLE_VIBRATION")).front();
+  CONFIG_SPEED_CHANGE = stringsToShorts(cfg.getValuesOfKey("CONFIG_SPEED_CHANGE")).front();
+  CONFIG_OSK = stringsToShorts(cfg.getValuesOfKey("CONFIG_OSK")).front();
 
   //--------------------------------
   // Controller bindings
   //--------------------------------
-  GAMEPAD_DPAD_UP = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_DPAD_UP").c_str(), 0, 0);
-  GAMEPAD_DPAD_DOWN = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_DPAD_DOWN").c_str(), 0, 0);
-  GAMEPAD_DPAD_LEFT = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_DPAD_LEFT").c_str(), 0, 0);
-  GAMEPAD_DPAD_RIGHT = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_DPAD_RIGHT").c_str(), 0, 0);
-  GAMEPAD_START = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_START").c_str(), 0, 0);
-  GAMEPAD_BACK = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_BACK").c_str(), 0, 0);
-  GAMEPAD_LEFT_THUMB = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_LEFT_THUMB").c_str(), 0, 0);
-  GAMEPAD_RIGHT_THUMB = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_RIGHT_THUMB").c_str(), 0, 0);
-  GAMEPAD_LEFT_SHOULDER = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_LEFT_SHOULDER").c_str(), 0, 0);
-  GAMEPAD_RIGHT_SHOULDER = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_RIGHT_SHOULDER").c_str(), 0, 0);
-  GAMEPAD_A = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_A").c_str(), 0, 0);
-  GAMEPAD_B = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_B").c_str(), 0, 0);
-  GAMEPAD_X = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_X").c_str(), 0, 0);
-  GAMEPAD_Y = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_Y").c_str(), 0, 0);
-  GAMEPAD_TRIGGER_LEFT = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_TRIGGER_LEFT").c_str(), 0, 0);
-  GAMEPAD_TRIGGER_RIGHT = strtol(cfg.getValueOfKey<std::string>("GAMEPAD_TRIGGER_RIGHT").c_str(), 0, 0);
+  GAMEPAD_DPAD_UP = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_DPAD_UP"));
+  GAMEPAD_DPAD_DOWN = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_DPAD_DOWN"));
+  GAMEPAD_DPAD_LEFT = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_DPAD_LEFT"));
+  GAMEPAD_DPAD_RIGHT = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_DPAD_RIGHT"));
+  GAMEPAD_START = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_START"));
+  GAMEPAD_BACK = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_BACK"));
+  GAMEPAD_LEFT_THUMB = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_LEFT_THUMB"));
+  GAMEPAD_RIGHT_THUMB = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_RIGHT_THUMB"));
+  GAMEPAD_LEFT_SHOULDER = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_LEFT_SHOULDER"));
+  GAMEPAD_RIGHT_SHOULDER = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_RIGHT_SHOULDER"));
+  GAMEPAD_A = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_A"));
+  GAMEPAD_B = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_B"));
+  GAMEPAD_X = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_X"));
+  GAMEPAD_Y = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_Y"));
+  GAMEPAD_TRIGGER_LEFT = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_TRIGGER_LEFT"));
+  GAMEPAD_TRIGGER_RIGHT = stringsToShorts(cfg.getValuesOfKey("GAMEPAD_TRIGGER_RIGHT"));
 
   //--------------------------------
   // Advanced settings
   //--------------------------------
 
   // Acceleration factor
-  acceleration_factor = strtof(cfg.getValueOfKey<std::string>("ACCELERATION_FACTOR").c_str(), 0);
+  acceleration_factor = strtof(cfg.getValuesOfKey("ACCELERATION_FACTOR").at(0).c_str(), 0);
 
   // Dead zones
-  DEAD_ZONE = strtol(cfg.getValueOfKey<std::string>("DEAD_ZONE").c_str(), 0, 0);
+  DEAD_ZONE = strtol(cfg.getValuesOfKey("DEAD_ZONE").at(0).c_str(), 0, 0);
   if (DEAD_ZONE == 0)
   {
     DEAD_ZONE = 6000;
   }
 
-  SCROLL_DEAD_ZONE = strtol(cfg.getValueOfKey<std::string>("SCROLL_DEAD_ZONE").c_str(), 0, 0);
+  SCROLL_DEAD_ZONE = strtol(cfg.getValuesOfKey("SCROLL_DEAD_ZONE").at(0).c_str(), 0, 0);
   if (SCROLL_DEAD_ZONE == 0)
   {
     SCROLL_DEAD_ZONE = 5000;
   }
 
-  SCROLL_SPEED = strtof(cfg.getValueOfKey<std::string>("SCROLL_SPEED").c_str(), 0);
+  SCROLL_SPEED = strtof(cfg.getValuesOfKey("SCROLL_SPEED").at(0).c_str(), 0);
   if (SCROLL_SPEED < 0.00001f)
   {
     SCROLL_SPEED = 0.1f;
   }
 
   // Variable cursor speeds
-  std::istringstream cursor_speed = std::istringstream(cfg.getValueOfKey<std::string>("CURSOR_SPEED"));
+  std::istringstream cursor_speed = std::istringstream(cfg.getValuesOfKey("CURSOR_SPEED").at(0).c_str());
   int cur_speed_idx = 1;
   const float CUR_SPEED_MIN = 0.0001f;
   const float CUR_SPEED_MAX = 1.0f;
@@ -185,7 +197,7 @@ void Gopher::loadConfigFile()
   speed = speeds[0];  // Initialize the speed to the first speed stored. TODO: Set the speed to a saved speed that was last used when the application was closed last.
 
   // Swap stick functions
-  SWAP_THUMBSTICKS = strtol(cfg.getValueOfKey<std::string>("SWAP_THUMBSTICKS").c_str(), 0, 0);
+  SWAP_THUMBSTICKS = strtol(cfg.getValuesOfKey("SWAP_THUMBSTICKS").at(0).c_str(), 0, 0);
 
   // Set the initial window visibility
   setWindowVisibility(_hidden);
@@ -280,59 +292,59 @@ void Gopher::loop()
 
   // Update all controller keys.
   handleTriggers(GAMEPAD_TRIGGER_LEFT, GAMEPAD_TRIGGER_RIGHT);
-  if (GAMEPAD_DPAD_UP)
+  if (!GAMEPAD_DPAD_UP.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_DPAD_UP, GAMEPAD_DPAD_UP);
   }
-  if (GAMEPAD_DPAD_DOWN)
+  if (!GAMEPAD_DPAD_DOWN.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_DPAD_DOWN, GAMEPAD_DPAD_DOWN);
   }
-  if (GAMEPAD_DPAD_LEFT)
+  if (!GAMEPAD_DPAD_LEFT.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_DPAD_LEFT, GAMEPAD_DPAD_LEFT);
   }
-  if (GAMEPAD_DPAD_RIGHT)
+  if (!GAMEPAD_DPAD_RIGHT.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_DPAD_RIGHT, GAMEPAD_DPAD_RIGHT);
   }
-  if (GAMEPAD_START)
+  if (!GAMEPAD_START.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_START, GAMEPAD_START);
   }
-  if (GAMEPAD_BACK)
+  if (!GAMEPAD_BACK.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_BACK, GAMEPAD_BACK);
   }
-  if (GAMEPAD_LEFT_THUMB)
+  if (!GAMEPAD_LEFT_THUMB.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_LEFT_THUMB, GAMEPAD_LEFT_THUMB);
   }
-  if (GAMEPAD_RIGHT_THUMB)
+  if (!GAMEPAD_RIGHT_THUMB.empty())
   {
-    mapKeyboard(XINPUT_GAMEPAD_RIGHT_THUMB, GAMEPAD_RIGHT_THUMB);
+      mapKeyboard(XINPUT_GAMEPAD_RIGHT_THUMB, GAMEPAD_RIGHT_THUMB);
   }
-  if (GAMEPAD_LEFT_SHOULDER)
+  if (!GAMEPAD_LEFT_SHOULDER.empty())
   {
-    mapKeyboard(XINPUT_GAMEPAD_LEFT_SHOULDER, GAMEPAD_LEFT_SHOULDER);
+      mapKeyboard(XINPUT_GAMEPAD_LEFT_SHOULDER, GAMEPAD_LEFT_SHOULDER);
   }
-  if (GAMEPAD_RIGHT_SHOULDER)
+  if (!GAMEPAD_RIGHT_SHOULDER.empty())
   {
-    mapKeyboard(XINPUT_GAMEPAD_RIGHT_SHOULDER, GAMEPAD_RIGHT_SHOULDER);
+      mapKeyboard(XINPUT_GAMEPAD_RIGHT_SHOULDER, GAMEPAD_RIGHT_SHOULDER);
   }
-  if (GAMEPAD_A)
+  if (!GAMEPAD_A.empty())
   {
-    mapKeyboard(XINPUT_GAMEPAD_A, GAMEPAD_A);
+      mapKeyboard(XINPUT_GAMEPAD_A, GAMEPAD_A);
   }
-  if (GAMEPAD_B)
+  if (!GAMEPAD_B.empty())
   {
-    mapKeyboard(XINPUT_GAMEPAD_B, GAMEPAD_B);
+      mapKeyboard(XINPUT_GAMEPAD_B, GAMEPAD_B);
   }
-  if (GAMEPAD_X)
+  if (!GAMEPAD_X.empty())
   {
-    mapKeyboard(XINPUT_GAMEPAD_X, GAMEPAD_X);
+      mapKeyboard(XINPUT_GAMEPAD_X, GAMEPAD_X);
   }
-  if (GAMEPAD_Y)
+  if (!GAMEPAD_Y.empty())
   {
     mapKeyboard(XINPUT_GAMEPAD_Y, GAMEPAD_Y);
   }
@@ -375,31 +387,32 @@ void Gopher::handleDisableButton()
       intensity = 10000;
 
       // Release all keys currently pressed by the Gopher mapping.
-      while (_pressedKeys.size() != 0)
+      std::vector<WORD> keyboardEvents;
+      while (!_pressedKeys.empty())
       {
-        std::list<WORD>::iterator it = _pressedKeys.begin();
+        WORD keyEvent = _pressedKeys.front();
 
         // Handle mouse buttons
-        if (*it == VK_LBUTTON)
+        // TODO: support mouse X1 and X2 buttons
+        switch (keyEvent)
         {
+        case VK_LBUTTON:
           mouseEvent(MOUSEEVENTF_LEFTUP);
-        }
-        else if (*it == VK_RBUTTON)
-        {
+          break;
+        case VK_RBUTTON:
           mouseEvent(MOUSEEVENTF_RIGHTUP);
-        }
-        else if (*it == VK_MBUTTON)
-        {
+          break;
+        case VK_MBUTTON:
           mouseEvent(MOUSEEVENTF_MIDDLEUP);
-        }
-        // Handle keys (TODO: support mouse X1 and X2 buttons)
-        else
-        {
-          inputKeyboardUp(*it);
+          break;
+        default:
+          keyboardEvents.push_back(keyEvent);
         }
 
-        _pressedKeys.erase(it);
+        _pressedKeys.pop_front();
       }
+
+      if (!keyboardEvents.empty()) inputKeyboardUp(keyboardEvents);
     }
     else
     {
@@ -577,7 +590,7 @@ void Gopher::handleScrolling()
 // Params:
 //   lKey   The mapped key for the left trigger
 //   rKey   The mapped key for the right trigger
-void Gopher::handleTriggers(WORD lKey, WORD rKey)
+void Gopher::handleTriggers(std::vector<WORD> lKey, std::vector<WORD> rKey)
 {
   bool lTriggerIsDown = _currentState.Gamepad.bLeftTrigger > TRIGGER_DEAD_ZONE;
   bool rTriggerIsDown = _currentState.Gamepad.bRightTrigger > TRIGGER_DEAD_ZONE;
@@ -685,23 +698,23 @@ bool Gopher::xboxClickStateExists(DWORD STATE)
 // Params:
 //   STATE  The Gopher state, or command, to trigger a key event
 //   key    The key value to input to the system
-void Gopher::mapKeyboard(DWORD STATE, WORD key)
+void Gopher::mapKeyboard(DWORD STATE, std::vector<WORD> keys)
 {
   setXboxClickState(STATE);
   if (_xboxClickIsDown[STATE])
   {
-    inputKeyboardDown(key);
+    inputKeyboardDown(keys);
 
     // Add key to the list of pressed keys.
-    _pressedKeys.push_back(key);
+    for (const WORD key : keys) _pressedKeys.push_back(key);
   }
 
   if (_xboxClickIsUp[STATE])
   {
-    inputKeyboardUp(key);
+    inputKeyboardUp(keys);
 
     // Remove key from the list of pressed keys.
-    erasePressedKey(key);
+    for (const WORD key : keys) erasePressedKey(key);
   }
 }
 

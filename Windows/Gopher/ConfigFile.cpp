@@ -1,6 +1,8 @@
 #include "ConfigFile.h"
 #include <iostream>
 #include <fstream> 
+#include <sstream>
+#include <vector>
 #include <windows.h>
 
 void ConfigFile::removeComment(std::string &line) const
@@ -44,11 +46,17 @@ void ConfigFile::extractKey(std::string &key, size_t const &sepPos, const std::s
     key.erase(key.find_first_of("\t "));
   }
 }
-void ConfigFile::extractValue(std::string &value, size_t const &sepPos, const std::string &line) const
+void ConfigFile::extractValues(std::vector<std::string> &values, size_t const &sepPos, const std::string &line) const
 {
-  value = line.substr(sepPos + 1);
-  value.erase(0, value.find_first_not_of("\t "));
-  value.erase(value.find_last_not_of("\t ") + 1);
+  std::string candidate=line.substr(sepPos + 1);
+  candidate.erase(0, candidate.find_first_not_of("\t "));
+  candidate.erase(candidate.find_last_not_of("\t ") + 1);
+
+  std::stringstream stream(candidate);
+  std::string value;
+  while (std::getline(stream, value, '|')) {
+    values.push_back(value);
+  }
 }
 
 void ConfigFile::extractContents(const std::string &line)
@@ -57,18 +65,12 @@ void ConfigFile::extractContents(const std::string &line)
   temp.erase(0, temp.find_first_not_of("\t "));
   size_t sepPos = temp.find('=');
 
-  std::string key, value;
+  std::string key;
+  std::vector<std::string> values;
   extractKey(key, sepPos, temp);
-  extractValue(value, sepPos, temp);
+  extractValues(values, sepPos, temp);
 
-  if (!keyExists(key))
-  {
-    contents.insert(std::pair<std::string, std::string>(key, value));
-  }
-  else
-  {
-    exitWithError("CFG: Can only have unique key names!\n");
-  }
+  if (!contents.insert({key, values}).second) exitWithError("CFG: Can only have unique key names!\n");
 }
 
 void ConfigFile::parseLine(const std::string &line, size_t const lineNo)
@@ -190,11 +192,6 @@ ConfigFile::ConfigFile(const std::string &fName)
 {
   this->fName = fName;
   ExtractKeys();
-}
-
-bool ConfigFile::keyExists(const std::string &key) const
-{
-  return contents.find(key) != contents.end();
 }
 
 void ConfigFile::exitWithError(const std::string &error)
